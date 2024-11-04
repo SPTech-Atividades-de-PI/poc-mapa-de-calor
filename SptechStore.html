@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemplo de Heatmap - SPTECH Store</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .arduinoAlocacao{
+            width: 600px;
+            height: 510px;
+            background-image: url(arduinos_Locacao.png);
+            background-repeat: no-repeat;
+            background-size: cover;
+            position: absolute;
+            z-index: 999;
+            margin-top: 190px;
+        }
+
+        .heatmap {
+            width: 600px;
+            height: 510px;
+            /* Imagem de fundo do mapa */
+            background-image: url(MapaLocal.png);
+            background-repeat: no-repeat;
+            background-size: cover;
+            border: 1px solid #ccc;
+        }
+
+        .controles {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+
+            p {
+                margin: 0;
+            }
+
+            h3 {
+                margin: 0;
+            }
+        }
+
+        .data-hora {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+        }
+    </style>
+    <script src="https://unpkg.com/heatmap.js"></script> <!-- Importar a biblioteca heatmap.js -->
+</head>
+
+<body>
+    <!-- Controles para filtrar os dados por intervalo de data e hora -->
+    <div class="controles">
+        <div>
+            <h3>Intervalo de Tempo</h3>
+            <p>Selecione um intervalo de tempo para visualizar os dados:</p>
+        </div>
+        <div class="data-hora">
+            <label for="data-inicial">Data Inicial:</label>
+            <input type="date" id="data-inicial" name="data-inicial" value="2024-01-01">
+            <label for="data-final">Data Final:</label>
+            <input type="date" id="data-final" name="data-final" value="2024-10-01">
+        </div>
+        <div class="data-hora">
+            <label for="hora">Hora Intervalo:</label>
+            <select id="hora" name="hora">
+                <option value="00:00-01:00">00:00 - 01:00</option>
+                <option value="01:00-02:00">01:00 - 02:00</option>
+                <option value="02:00-03:00">02:00 - 03:00</option>
+                <option value="03:00-04:00">03:00 - 04:00</option>
+                <option value="04:00-05:00">04:00 - 05:00</option>
+                <option value="05:00-06:00">05:00 - 06:00</option>
+                <option value="06:00-07:00">06:00 - 07:00</option>
+                <option value="07:00-08:00">07:00 - 08:00</option>
+                <option value="08:00-09:00">08:00 - 09:00</option>
+                <option value="09:00-10:00">09:00 - 10:00</option>
+                <option value="10:00-11:00">10:00 - 11:00</option>
+                <option value="11:00-12:00">11:00 - 12:00</option>
+                <option value="12:00-13:00">12:00 - 13:00</option>
+                <option value="13:00-14:00">13:00 - 14:00</option>
+                <option value="14:00-15:00">14:00 - 15:00</option>
+                <option value="15:00-16:00">15:00 - 16:00</option>
+                <option value="16:00-17:00">16:00 - 17:00</option>
+                <option value="17:00-18:00">17:00 - 18:00</option>
+                <option value="18:00-19:00">18:00 - 19:00</option>
+                <option value="19:00-20:00">19:00 - 20:00</option>
+                <option value="20:00-21:00">20:00 - 21:00</option>
+                <option value="21:00-22:00">21:00 - 22:00</option>
+                <option value="22:00-23:00">22:00 - 23:00</option>
+                <option value="23:00-00:00">23:00 - 00:00</option>
+            </select>
+        </div>
+
+        <button onclick="filtrarDadosPorDataHora()">Aplicar Intervalo de Tempo</button>
+    </div>
+
+    <!-- Div para exibir o heatmap -->
+    <div class="arduinoAlocacao"></div>
+    <div class="heatmap"></div>
+    <script>
+        // Criar uma instância do heatmap.js
+        var instanciaHeatmap = h337.create({
+            container: document.querySelector('.heatmap')
+        });
+
+        // Estrutura de dados separada por locais, cada local tem várias capturas de dados com datas e horários
+        var dadosPorLocal = {
+            local1: [
+                { x: 95, y: 175, value: 30, radius: 130, dataHora: '2024-10-01T10:30' },
+                { x: 95, y: 175, value: 40, radius: 130, dataHora: '2024-10-01T11:15' },
+                { x: 95, y: 175, value: 50, radius: 130, dataHora: '2024-10-01T11:45' }
+            ],
+            local2: [
+                { x: 310, y: 225, value: 20, radius: 90, dataHora: '2024-10-02T10:45' },
+                { x: 310, y: 225, value: 30, radius: 90, dataHora: '2024-10-02T11:20' },
+                { x: 310, y: 225, value: 40, radius: 90, dataHora: '2024-10-02T11:50' }
+            ],
+            local3: [
+                { x: 545, y: 190, value: 60, radius: 100, dataHora: '2024-10-01T11:10' },
+                { x: 545, y: 190, value: 70, radius: 100, dataHora: '2024-10-01T11:30' },
+                { x: 545, y: 190, value: 80, radius: 100, dataHora: '2024-10-01T12:00' }
+            ],
+            local4: [
+                { x: 190, y: 364, value: 50, radius: 130, dataHora: '2024-10-02T11:00' },
+                { x: 190, y: 364, value: 60, radius: 130, dataHora: '2024-10-02T11:40' },
+                { x: 190, y: 364, value: 70, radius: 130, dataHora: '2024-10-02T12:15' }
+            ],
+            local5: [
+                { x: 400, y: 365, value: 80, radius: 130, dataHora: '2024-10-03T11:05' },
+                { x: 400, y: 365, value: 40, radius: 130, dataHora: '2024-10-03T11:35' },
+                { x: 400, y: 365, value: 50, radius: 130, dataHora: '2024-10-03T12:10' }
+            ]
+        };
+
+        // Função para converter data e hora em um objeto Date
+        function converterParaDataCompleta(data, hora) {
+            return new Date(`${data}T${hora}`);
+        }
+
+        // Função para aplicar o filtro de intervalo de data e hora e adicionar os dados ao heatmap
+        function filtrarDadosPorDataHora() {
+            var dataInicial = document.getElementById('data-inicial').value;
+            var dataFinal = document.getElementById('data-final').value;
+            var horaIntervalo = document.getElementById('hora').value;
+
+            // Separar a hora inicial e final do intervalo selecionado
+            var horas = horaIntervalo.split("-");
+            var horaInicial = horas[0];
+            var horaFinal = horas[1];
+
+            // Converter os dados e horários em objetos Date
+            var dataHoraInicial = converterParaDataCompleta(dataInicial, horaInicial);
+            var dataHoraFinal = converterParaDataCompleta(dataFinal, horaFinal);
+
+            if (dataHoraFinal < dataHoraInicial) {
+                alert("A data e hora final devem ser maiores ou iguais à data e hora inicial.");
+                return;
+            }
+
+            // Limpar o heatmap antes de adicionar novos dados
+            instanciaHeatmap.setData({ max: 0, data: [] });
+
+            // Percorrer todos os locais
+            for (var local in dadosPorLocal) {
+                var dadosDoLocal = dadosPorLocal[local];
+
+                // Percorrer cada ponto de dados dentro de um local
+                for (var i = 0; i < dadosDoLocal.length; i++) {
+                    var ponto = dadosDoLocal[i];
+                    var dataHoraPonto = new Date(ponto.dataHora);
+
+                    // Verificar se o ponto de dados está dentro do intervalo de data e hora
+                    if (dataHoraPonto >= dataHoraInicial && dataHoraPonto <= dataHoraFinal) {
+                        // Usando addData para adicionar os pontos ao heatmap
+                        instanciaHeatmap.addData(ponto);
+                    }
+                }
+            }
+        }
+
+        // Carregar os dados iniciais
+        filtrarDadosPorDataHora();
+    </script>
+
+</body>
+
+</html>
